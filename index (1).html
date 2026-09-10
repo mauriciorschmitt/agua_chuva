@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de aproveitamento de água de chuva — UnC Campus Mafra</title>
+<meta name="description" content="Calculadora aberta de potencial de captação de água de chuva em coberturas, conforme ABNT NBR 15527. Estudo de caso: Universidade do Contestado, Campus Mafra (SC).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E9EDE9;
+  --card:#F5F7F4;
+  --ink:#17251F;
+  --ink2:#4E5F56;
+  --ink3:#7A8A80;
+  --rule:#C6CFC7;
+  --rule2:#DDE3DD;
+  --water:#10646E;
+  --water2:#2A98A4;
+  --clay:#9E4B2D;
+  --sun:#A8791F;
+  --focus:#10646E;
+  --sans:'Archivo',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.55;
+  font-variant-numeric:tabular-nums;
+}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+
+/* ---------- masthead ---------- */
+.mast{border-bottom:1px solid var(--rule);padding:34px 0 26px}
+.mast h1{
+  font-size:clamp(30px,4.4vw,50px);line-height:1.02;margin:0 0 10px;
+  font-weight:700;letter-spacing:-.025em;max-width:17ch;
+}
+.mast p{margin:0;color:var(--ink2);max-width:62ch;font-size:15px}
+.mast .org{
+  font-size:13px;color:var(--ink3);margin:0 0 14px;
+  border-left:3px solid var(--water);padding-left:10px;
+}
+
+/* ---------- hietograma ---------- */
+.hyeto{padding:30px 0 26px;border-bottom:1px solid var(--rule)}
+.hyeto-top{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+.hyeto-top h2{margin:0;font-size:17px;font-weight:600}
+.hyeto-top .sub{margin:4px 0 0;font-size:13px;color:var(--ink2);max-width:56ch}
+.yield{text-align:right;flex:0 0 auto}
+.yield b{display:block;font-family:var(--mono);font-size:clamp(30px,4vw,44px);font-weight:600;line-height:1;color:var(--water);letter-spacing:-.02em}
+.yield span{display:block;font-size:12.5px;color:var(--ink2);margin-top:6px}
+
+.gauge{border-top:2px solid var(--ink);overflow-x:auto;padding-bottom:2px}
+.bars{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;align-items:start}
+.bar-col{display:flex;flex-direction:column;align-items:center}
+.bar-track{height:130px;width:100%;display:flex;justify-content:center}
+.bar{width:100%;max-width:44px;background:var(--water);transition:height .18s ease}
+.bar-m{font-size:11px;color:var(--ink3);margin:7px 0 4px;letter-spacing:.02em}
+.bar-in{
+  width:100%;max-width:52px;border:1px solid var(--rule);background:var(--card);
+  font-family:var(--mono);font-size:12px;text-align:center;padding:4px 2px;color:var(--ink);
+  border-radius:2px;
+}
+.bar-in:focus{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
+.gauge-foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:12.5px;color:var(--ink2)}
+
+/* ---------- layout ---------- */
+.cols{display:grid;grid-template-columns:322px minmax(0,1fr);gap:40px;align-items:start;padding:34px 0 60px}
+.panel{position:sticky;min-width:0;top:18px;max-height:calc(100vh - 36px);overflow-y:auto;padding-right:6px}
+.panel::-webkit-scrollbar{width:8px}
+.panel::-webkit-scrollbar-thumb{background:var(--rule);border-radius:4px}
+
+fieldset{border:0;border-top:1px solid var(--rule);margin:0 0 22px;padding:14px 0 0}
+fieldset:first-of-type{border-top:0;padding-top:0}
+legend{font-size:12.5px;font-weight:600;color:var(--water);padding:0}
+.f{display:grid;grid-template-columns:1fr 80px 42px;gap:7px;align-items:center;margin:9px 0}
+.f label{font-size:13px;line-height:1.3;color:var(--ink2)}
+.f input{
+  width:100%;border:1px solid var(--rule);background:var(--card);border-radius:2px;
+  font-family:var(--mono);font-size:13px;padding:6px 8px;text-align:right;color:var(--ink);
+}
+.f input:focus{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
+.f .u{font-size:10.5px;color:var(--ink3);font-family:var(--mono);text-align:left;line-height:1.1}
+.derived{font-size:12.5px;color:var(--ink2);border-left:2px solid var(--rule);padding:2px 0 2px 9px;margin:10px 0 0}
+.derived b{font-family:var(--mono);color:var(--ink);font-weight:600}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+button{
+  font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;
+  border:1px solid var(--ink);background:transparent;color:var(--ink);
+  padding:7px 13px;border-radius:2px;
+}
+button:hover{background:var(--ink);color:var(--paper)}
+button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+button.solid{background:var(--water);border-color:var(--water);color:#fff}
+button.solid:hover{background:var(--ink);border-color:var(--ink)}
+
+/* ---------- results ---------- */
+.res{min-width:0}
+.res section{margin:0 0 46px;scroll-margin-top:20px}
+.res h2{
+  font-size:20px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em;
+  padding-bottom:8px;border-bottom:2px solid var(--ink);
+}
+.res .lead{margin:12px 0 18px;color:var(--ink2);max-width:70ch}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--rule2);border:1px solid var(--rule2);margin:0 0 20px}
+.kpi{background:var(--card);padding:14px 16px}
+.kpi b{display:block;font-family:var(--mono);font-size:24px;font-weight:600;line-height:1.15;letter-spacing:-.02em}
+.kpi span{display:block;font-size:12.5px;color:var(--ink2);margin-top:5px;line-height:1.35}
+.kpi.w b{color:var(--water)}
+.kpi.c b{color:var(--clay)}
+
+.split{margin:22px 0 10px}
+.split-bar{display:flex;height:44px;border:1px solid var(--ink);overflow:hidden}
+.split-used{background:var(--water)}
+.split-over{background:var(--clay)}
+.split-lab{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-top:9px;font-size:13px}
+.split-lab .l{display:flex;gap:8px;align-items:baseline}
+.swatch{width:11px;height:11px;flex:0 0 auto;position:relative;top:1px}
+.split-lab b{font-family:var(--mono);font-weight:600}
+
+.tscroll{overflow-x:auto;min-width:0;margin:6px 0 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--rule2)}
+th{font-size:11.5px;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--rule);vertical-align:bottom;line-height:1.25}
+td:first-child,th:first-child{text-align:left}
+td{font-family:var(--mono);font-size:12.5px}
+td:first-child{font-family:var(--sans);font-size:13px}
+tbody tr:hover{background:var(--card)}
+tfoot td{font-weight:600;border-top:1px solid var(--ink);border-bottom:0;background:var(--card)}
+.rowmark td{background:#DCE9E8}
+.rowmark td:first-child{font-weight:600}
+
+.note{
+  border-left:3px solid var(--sun);background:var(--card);
+  padding:11px 14px;margin:18px 0;font-size:13.5px;color:var(--ink2);max-width:74ch;
+}
+.note b{color:var(--ink)}
+.note.warn{border-left-color:var(--clay)}
+.note.ok{border-left-color:var(--water)}
+
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px}
+.two>div{min-width:0}
+.res h3{font-size:14.5px;font-weight:600;margin:24px 0 6px}
+.res p{max-width:74ch}
+ul.tight{margin:8px 0 0;padding-left:19px;color:var(--ink2);font-size:13.5px}
+ul.tight li{margin:5px 0}
+
+footer{border-top:1px solid var(--rule);padding:26px 0 50px;font-size:13px;color:var(--ink2)}
+footer a{color:var(--water)}
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+  background:var(--ink);color:var(--paper);padding:10px 18px;font-size:13.5px;
+  border-radius:2px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;
+}
+.toast.on{opacity:1}
+
+@media (max-width:940px){
+  .cols{grid-template-columns:minmax(0,1fr);gap:26px;padding-top:24px}
+  .panel{position:static;max-height:none;overflow:visible;border-bottom:1px solid var(--rule);padding-bottom:22px}
+  .two{grid-template-columns:minmax(0,1fr);gap:0}
+}
+@media (max-width:620px){
+  .wrap{padding:0 16px}
+  .bars{gap:4px;min-width:560px}
+  .bar-track{height:104px}
+  .bar-m{font-size:10px}
+  .gauge-foot{font-size:12px}
+  .yield{text-align:left}
+  .tscroll table{min-width:530px;font-size:12px}
+  .tscroll{border-bottom:1px solid var(--rule2)}
+  th,td{padding:5px 5px}
+  .kpi b{font-size:21px}
+  .f{grid-template-columns:1fr 72px 42px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+  body{background:#fff}
+  .panel .acts,.bar-in{display:none}
+  .cols{grid-template-columns:1fr;padding:0}
+  .res section{break-inside:avoid}
+  .note{border-left-width:2px}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="mast">
+    <p class="org">Universidade do Contestado · Campus Mafra · Santa Catarina</p>
+    <h1>Quanta água cai nos nossos telhados</h1>
+    <p>Calculadora aberta de aproveitamento de água de chuva em coberturas, seguindo a ABNT NBR 15527:2019. Todos os parâmetros são editáveis: mude um valor e a leitura inteira se refaz.</p>
+  </header>
+
+  <div class="hyeto">
+    <div class="hyeto-top">
+      <div>
+        <h2>Precipitação mensal</h2>
+        <p class="sub">Barras penduradas na régua, como se representa chuva em hidrologia. Edite os milímetros de cada mês abaixo.</p>
+      </div>
+      <div class="yield">
+        <b id="kYield">–</b>
+        <span>litros por m² de telhado, por ano</span>
+      </div>
+    </div>
+    <div class="gauge">
+      <div class="bars" id="bars"></div>
+    </div>
+    <div class="gauge-foot">
+      <span>Total anual: <b id="pTotal" style="font-family:var(--mono)">–</b> mm</span>
+      <span>Valores provisórios do Planalto Norte Catarinense — substituir pelas normais do INMET</span>
+    </div>
+  </div>
+
+  <div class="cols">
+
+    <!-- ============ ENTRADAS ============ -->
+    <form class="panel" id="panel" autocomplete="off">
+      <fieldset>
+        <legend>Cobertura</legend>
+        <div class="f"><label for="A">Área de telhado, projeção horizontal</label><input type="number" id="A" step="0.01"><span class="u">m²</span></div>
+        <div class="f"><label for="C">Coeficiente de escoamento</label><input type="number" id="C" step="0.01"><span class="u">–</span></div>
+        <div class="f"><label for="eta">Eficiência do filtro e descarte</label><input type="number" id="eta" step="0.01"><span class="u">–</span></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Demanda não potável</legend>
+        <div class="f"><label for="pop">Pessoas no campus</label><input type="number" id="pop"><span class="u">un</span></div>
+        <div class="f"><label for="dias">Dias letivos por ano</label><input type="number" id="dias"><span class="u">dias</span></div>
+        <div class="f"><label for="desc">Descargas por pessoa por dia</label><input type="number" id="desc" step="0.1"><span class="u">un</span></div>
+        <div class="f"><label for="ldesc">Volume por descarga</label><input type="number" id="ldesc" step="0.5"><span class="u">L</span></div>
+        <div class="f"><label for="piso">Área de piso lavável</label><input type="number" id="piso"><span class="u">m²</span></div>
+        <div class="f"><label for="lpiso">Consumo na limpeza</label><input type="number" id="lpiso" step="0.1"><span class="u">L/m²·mês</span></div>
+        <div class="f"><label for="jard">Área irrigada</label><input type="number" id="jard"><span class="u">m²</span></div>
+        <div class="f"><label for="ljard">Lâmina de irrigação</label><input type="number" id="ljard" step="0.1"><span class="u">L/m²·dia</span></div>
+        <div class="f"><label for="dirrig">Dias de irrigação</label><input type="number" id="dirrig"><span class="u">dias</span></div>
+        <p class="derived">Demanda total: <b id="dTot">–</b> m³/ano<br>Bacias <b id="dBac">–</b> · limpeza <b id="dLim">–</b> · irrigação <b id="dIrr">–</b></p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Reservatório e investimento</legend>
+        <div class="f"><label for="Vres">Volume do reservatório</label><input type="number" id="Vres"><span class="u">m³</span></div>
+        <div class="f"><label for="cRes">Custo do reservatório</label><input type="number" id="cRes"><span class="u">R$/m³</span></div>
+        <div class="f"><label for="cRede">Calhas, filtros, bombas, rede</label><input type="number" id="cRede"><span class="u">R$</span></div>
+        <div class="f"><label for="opex">Operação e manutenção</label><input type="number" id="opex"><span class="u">R$/ano</span></div>
+        <p class="derived">Investimento: <b id="dCapex">–</b></p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Tarifa</legend>
+        <div class="f"><label for="tar">Tarifa de água</label><input type="number" id="tar" step="0.01"><span class="u">R$/m³</span></div>
+        <div class="f"><label for="esg">Esgoto, fração sobre a água</label><input type="number" id="esg" step="0.01"><span class="u">–</span></div>
+        <p class="derived">Custo evitado: <b id="dCust">–</b> por m³</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Chuva de projeto e pavimentos</legend>
+        <div class="f"><label for="ii">Intensidade</label><input type="number" id="ii" step="1"><span class="u">mm/h</span></div>
+        <div class="f"><label for="dur">Duração</label><input type="number" id="dur"><span class="u">min</span></div>
+        <div class="f"><label for="Cpico">Coef. do telhado no pico</label><input type="number" id="Cpico" step="0.01"><span class="u">–</span></div>
+        <div class="f"><label for="Aasf">Área pavimentada</label><input type="number" id="Aasf"><span class="u">m²</span></div>
+        <div class="f"><label for="Casf">Coef. do pavimento</label><input type="number" id="Casf" step="0.01"><span class="u">–</span></div>
+        <div class="f"><label for="livre">Reservatório vazio na chegada da chuva</label><input type="number" id="livre" step="0.05"><span class="u">fração</span></div>
+      </fieldset>
+
+      <div class="acts">
+        <button type="button" class="solid" id="bShare">Copiar link com estes valores</button>
+        <button type="button" id="bPrint">Imprimir</button>
+        <button type="button" id="bReset">Restaurar padrão</button>
+      </div>
+    </form>
+
+    <!-- ============ RESULTADOS ============ -->
+    <main class="res">
+
+      <section id="captacao">
+        <h2>Captação</h2>
+        <p class="lead">Um milímetro de chuva equivale a um litro por metro quadrado. O que o telhado entrega é esse total descontado do escorrimento, da evaporação e do descarte da primeira chuva.</p>
+        <div class="kpis">
+          <div class="kpi w"><b id="kAprov">–</b><span>m³ por ano aproveitáveis</span></div>
+          <div class="kpi"><b id="kBruto">–</b><span>m³ brutos que caem no telhado</span></div>
+          <div class="kpi"><b id="kPerda">–</b><span>m³ perdidos no sistema</span></div>
+          <div class="kpi"><b id="kPipa">–</b><span>caminhões-pipa de 10 m³</span></div>
+        </div>
+
+        <div class="split">
+          <div class="split-bar" id="splitBar">
+            <div class="split-used" id="sUsed"></div>
+            <div class="split-over" id="sOver"></div>
+          </div>
+          <div class="split-lab">
+            <span class="l"><i class="swatch" style="background:var(--water)"></i>Consumida no campus: <b id="sUsedT">–</b></span>
+            <span class="l"><i class="swatch" style="background:var(--clay)"></i>Extravasa para a galeria: <b id="sOverT">–</b></span>
+          </div>
+        </div>
+        <div class="note" id="noteGap"></div>
+      </section>
+
+      <section id="balanco">
+        <h2>Balanço mês a mês</h2>
+        <p class="lead">Simulação do reservatório pelo método do Anexo A da NBR 15527. O ano começa com o reservatório vazio, o que é a hipótese conservadora.</p>
+        <table>
+          <thead><tr>
+            <th>Mês</th><th>Chuva<br>mm</th><th>Captado<br>m³</th><th>Demanda<br>m³</th>
+            <th>Da chuva<br>m³</th><th>Da rede<br>m³</th><th>Extravasa<br>m³</th><th>Nível fim<br>m³</th>
+          </tr></thead>
+          <tbody id="tBal"></tbody>
+          <tfoot id="fBal"></tfoot>
+        </table>
+
+        <h3>Que tamanho de reservatório escolher</h3>
+        <p class="lead">Os três métodos normativos dão respostas bem diferentes, o que é esperado. A tabela seguinte é mais útil para decidir: mostra o que se ganha de fato ao aumentar o volume.</p>
+        <table>
+          <thead><tr><th>Método</th><th>Volume<br>m³</th><th>Observação</th></tr></thead>
+          <tbody id="tDim"></tbody>
+        </table>
+        <table style="margin-top:22px">
+          <thead><tr>
+            <th>Reservatório<br>m³</th><th>Demanda atendida</th><th>Água aproveitada</th>
+            <th>Economia líquida<br>R$/ano</th><th>Investimento<br>R$</th><th>Retorno<br>anos</th>
+          </tr></thead>
+          <tbody id="tSweep"></tbody>
+        </table>
+        <div class="note" id="noteSweep"></div>
+      </section>
+
+      <section id="economia">
+        <h2>Economia</h2>
+        <p class="lead">Só gera economia a água que substitui consumo real. O excedente não vira dinheiro, por mais que o telhado produza.</p>
+        <div class="kpis">
+          <div class="kpi w"><b id="kEcon">–</b><span>economia líquida por ano</span></div>
+          <div class="kpi"><b id="kSubst">–</b><span>m³ por ano substituídos</span></div>
+          <div class="kpi"><b id="kPay">–</b><span>anos de retorno simples</span></div>
+          <div class="kpi"><b id="k20">–</b><span>saldo em 20 anos</span></div>
+        </div>
+        <table>
+          <thead><tr><th>Tarifa de água<br>R$/m³</th><th>Custo evitado<br>com esgoto</th><th>Economia líquida<br>R$/ano</th><th>Retorno<br>anos</th></tr></thead>
+          <tbody id="tTar"></tbody>
+        </table>
+        <div class="note" id="noteEcon"></div>
+      </section>
+
+      <section id="drenagem">
+        <h2>Alívio da drenagem</h2>
+        <p class="lead">Alagamento é problema de vazão de pico, não de volume anual. Pelo método racional, com a chuva de projeto definida ao lado, é isto que o campus despeja hoje na rede.</p>
+        <div class="kpis">
+          <div class="kpi c"><b id="kQtot">–</b><span>L/s no pico, campus inteiro</span></div>
+          <div class="kpi"><b id="kQtel">–</b><span>L/s vindos dos telhados</span></div>
+          <div class="kpi"><b id="kQasf">–</b><span>L/s vindos do pavimento</span></div>
+          <div class="kpi"><b id="kVev">–</b><span>m³ no evento inteiro</span></div>
+        </div>
+        <div class="two">
+          <div>
+            <h3>O que a cisterna retém de verdade</h3>
+            <table>
+              <tbody id="tDren"></tbody>
+            </table>
+          </div>
+          <div>
+            <h3>Reservatório de dupla função</h3>
+            <p style="font-size:13.5px;color:var(--ink2);margin:8px 0 0">A faixa inferior armazena para uso; a superior fica vazia e esvazia devagar por orifício de fundo depois da chuva. Assim o volume de amortecimento está sempre disponível e o benefício de drenagem deixa de depender de sorte.</p>
+            <table style="margin-top:12px">
+              <tbody id="tDual"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="note warn" id="noteDren"></div>
+        <p style="margin-top:18px">Ao longo do ano, <b id="dAnual">–</b> m³ deixam de chegar à galeria porque foram consumidos no campus. É <b id="dAnualP">–</b> de tudo que hoje escorre dos telhados direto para a rede.</p>
+      </section>
+
+      <section id="asfalto">
+        <h2>Pavimentos, um caso diferente</h2>
+        <div class="kpis">
+          <div class="kpi c"><b id="kAsfV">–</b><span>m³ por ano escoados do pavimento</span></div>
+          <div class="kpi"><b id="kAsfR">–</b><span>do volume que sai dos telhados</span></div>
+        </div>
+        <p class="lead">O pavimento costuma gerar mais escoamento que as coberturas, mas é o pior candidato a cisterna de uso: carrega óleo, graxa, metais de pastilha de freio e pneu, sedimento em grande quantidade e carga orgânica. Atender aos parâmetros de qualidade da NBR 15527 exigiria separador de água e óleo, sedimentação e desinfecção, o que derruba a viabilidade.</p>
+        <h3>O destino adequado é infiltrar na origem</h3>
+        <ul class="tight">
+          <li>Pavimento permeável nos estacionamentos, em bloco intertravado vazado ou concreto poroso.</li>
+          <li>Trincheira de infiltração acompanhando o meio-fio.</li>
+          <li>Jardim de chuva e biovaleta nas ilhas e canteiros.</li>
+          <li>Poço de infiltração, onde o solo e o nível do lençol permitirem.</li>
+          <li>Vala gramada no lugar de sarjeta.</li>
+        </ul>
+        <p>Essas medidas atacam a causa do transbordamento, que é a impermeabilização, e ainda recarregam o aquífero, sem exigir rede dupla nem bombeamento. O dimensionamento depende de ensaio de infiltração no solo do campus, que é argiloso no Planalto Norte e costuma ter taxa baixa.</p>
+      </section>
+
+      <section id="premissas">
+        <h2>De onde vêm os números</h2>
+        <table>
+          <tbody>
+            <tr><td>Área de telhado</td><td style="text-align:left;font-family:var(--sans)">Medição em imagem de satélite, projeção horizontal. Inclui as coberturas recentes do Colégio Mafrense e das clínicas veterinárias.</td></tr>
+            <tr><td>Precipitação</td><td style="text-align:left;font-family:var(--sans)">Valores provisórios do Planalto Norte Catarinense. Substituir pelas Normais Climatológicas 1991–2020 do INMET, estações Mafra, Rio Negro, Rio Negrinho ou Canoinhas.</td></tr>
+            <tr><td>Coeficientes</td><td style="text-align:left;font-family:var(--sans)">Escoamento conforme material da cobertura; eficiência de 0,85 é o valor sugerido pela NBR 15527 na falta de dado do fabricante.</td></tr>
+            <tr><td>Tarifa</td><td style="text-align:left;font-family:var(--sans)">Conta de água do campus. Confirmar a categoria tarifária junto ao SIMAE de Mafra e Rio Negro.</td></tr>
+            <tr><td>Chuva de projeto</td><td style="text-align:left;font-family:var(--sans)">Substituir pela equação IDF de Mafra. Fontes: software Plúvio da UFV, ou Chuvas Intensas no Brasil, de Pfafstetter.</td></tr>
+            <tr><td>Custos</td><td style="text-align:left;font-family:var(--sans)">Ordens de grandeza de mercado. Para decisão de investimento, cotar reservatório e projeto hidráulico localmente.</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:18px">Normas aplicadas: NBR 15527:2019, aproveitamento de coberturas para fins não potáveis; NBR 10844:1989, instalações prediais de águas pluviais; NBR 5626, que exige separação total entre a rede de água de chuva e a rede potável.</p>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <p>Calculadora aberta. O código é um arquivo HTML único, sem dependências: qualquer instituição pode copiar, trocar os parâmetros e usar no próprio campus. Os cálculos rodam no navegador e nada é enviado a servidor.</p>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+const MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MESESL=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+const DEF={
+  A:12118.82, C:0.85, eta:0.85,
+  pop:1800, dias:200, desc:2, ldesc:6,
+  piso:4000, lpiso:2, jard:0, ljard:3, dirrig:120,
+  Vres:300, cRes:700, cRede:260000, opex:7000,
+  tar:5.73, esg:0.80,
+  ii:70, dur:60, Cpico:0.95, Aasf:15000, Casf:0.90, livre:0.50,
+  P:[175,160,130,100,105,110,105,95,150,165,130,145],
+  F:[0.02,0.10,0.10,0.10,0.10,0.10,0.04,0.10,0.10,0.10,0.09,0.05]
+};
+const KEYS=Object.keys(DEF).filter(k=>k!=='P'&&k!=='F');
+
+const nf=(n,d)=>new Intl.NumberFormat('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
+const n0=n=>nf(n,0), n1=n=>nf(n,1), n2=n=>nf(n,2);
+const brl=n=>'R$ '+nf(Math.round(n),0);
+const pct=n=>nf(n*100,1)+'%';
+const $=id=>document.getElementById(id);
+
+let S=JSON.parse(JSON.stringify(DEF));
+
+/* ---------- montar hietograma ---------- */
+const barsEl=$('bars');
+MESES.forEach((m,i)=>{
+  const col=document.createElement('div'); col.className='bar-col';
+  col.innerHTML='<div class="bar-track"><div class="bar" data-b="'+i+'"></div></div>'+
+                '<div class="bar-m">'+m+'</div>'+
+                '<input class="bar-in" type="number" min="0" data-p="'+i+'" aria-label="Precipitação de '+MESESL[i]+' em milímetros">';
+  barsEl.appendChild(col);
+});
+
+/* ---------- núcleo de cálculo ---------- */
+function simulate(sup,dem,V){
+  let lvl=0; const rows=[]; let tU=0,tR=0,tX=0;
+  for(let i=0;i<12;i++){
+    const ini=lvl, disp=ini+sup[i];
+    const usado=Math.min(dem[i],disp);
+    const rede=dem[i]-usado;
+    const after=disp-usado;
+    const fim=Math.min(after,V);
+    const ext=after-fim;
+    lvl=fim; tU+=usado; tR+=rede; tX+=ext;
+    rows.push({ini,usado,rede,ext,fim});
+  }
+  return {rows,usado:tU,rede:tR,ext:tX};
+}
+
+function model(s){
+  const Pano=s.P.reduce((a,b)=>a+b,0);
+  const bruto=s.P.map(p=>s.A*p/1000);
+  const aprov=bruto.map(v=>v*s.C*s.eta);
+  const brutoT=bruto.reduce((a,b)=>a+b,0), aprovT=aprov.reduce((a,b)=>a+b,0);
+
+  const dBac=s.pop*s.dias*s.desc*s.ldesc/1000;
+  const dLim=s.piso*s.lpiso*12/1000;
+  const dIrr=s.jard*s.ljard*s.dirrig/1000;
+  const dTot=dBac+dLim+dIrr;
+  const dem=s.F.map(f=>dTot*f);
+
+  const sim=simulate(aprov,dem,s.Vres);
+
+  const custo=s.tar*(1+s.esg);
+  const capex=s.Vres*s.cRes+s.cRede;
+  const bruta=sim.usado*custo;
+  const liq=bruta-s.opex;
+  const pay=liq>0?capex/liq:Infinity;
+
+  const h=s.dur/60, hmm=s.ii*h;
+  const Qtel=s.Cpico*s.ii*s.A/3600;
+  const Qasf=s.Casf*s.ii*s.Aasf/3600;
+  const Vtel=hmm*s.A*s.Cpico/1000;
+  const Vasf=hmm*s.Aasf*s.Casf/1000;
+  const livreV=s.Vres*s.livre;
+  const retido=Math.min(livreV,Vtel);
+  const amort=0.15*(s.A+s.Aasf)*0.06*1;
+
+  const asfAno=s.Aasf*Pano*s.Casf/1000;
+
+  return {Pano,bruto,aprov,brutoT,aprovT,dBac,dLim,dIrr,dTot,dem,sim,
+          custo,capex,bruta,liq,pay,hmm,Qtel,Qasf,Vtel,Vasf,livreV,retido,amort,asfAno,
+          rend:s.A>0?aprovT*1000/s.A:0};
+}
+
+/* variação só do reservatório, para a tabela de sensibilidade */
+function atV(s,m,V){
+  const sim=simulate(m.aprov,m.dem,V);
+  const capex=V*s.cRes+s.cRede;
+  const liq=sim.usado*m.custo-s.opex;
+  return {V,sim,capex,liq,pay:liq>0?capex/liq:Infinity,
+          atend:m.dTot>0?sim.usado/m.dTot:0,
+          aprov:m.aprovT>0?sim.usado/m.aprovT:0};
+}
+
+/* ---------- render ---------- */
+function render(){
+  const s=S, m=model(s);
+
+  /* hietograma */
+  const pmax=Math.max(...s.P,1);
+  document.querySelectorAll('[data-b]').forEach(el=>{
+    el.style.height=(Math.max(s.P[+el.dataset.b],0)/pmax*100)+'%';
+  });
+  $('pTotal').textContent=n0(m.Pano);
+  $('kYield').textContent=n0(m.rend);
+
+  /* painel derivados */
+  $('dTot').textContent=n0(m.dTot);
+  $('dBac').textContent=n0(m.dBac);
+  $('dLim').textContent=n0(m.dLim);
+  $('dIrr').textContent=n0(m.dIrr);
+  $('dCapex').textContent=brl(m.capex);
+  $('dCust').textContent='R$ '+n2(m.custo);
+
+  /* captação */
+  $('kAprov').textContent=n0(m.aprovT);
+  $('kBruto').textContent=n0(m.brutoT);
+  $('kPerda').textContent=n0(m.brutoT-m.aprovT);
+  $('kPipa').textContent=n0(m.aprovT/10);
+
+  const tot=Math.max(m.sim.usado+m.sim.ext,1);
+  $('sUsed').style.width=(m.sim.usado/tot*100)+'%';
+  $('sOver').style.width=(m.sim.ext/tot*100)+'%';
+  $('sUsedT').textContent=n0(m.sim.usado)+' m³ ('+pct(m.sim.usado/tot)+')';
+  $('sOverT').textContent=n0(m.sim.ext)+' m³ ('+pct(m.sim.ext/tot)+')';
+
+  const atend=m.dTot>0?m.sim.usado/m.dTot:0;
+  const g=$('noteGap');
+  if(m.aprovT>m.dTot*1.15){
+    g.className='note ok';
+    g.innerHTML='<b>O limite não é o telhado, é o consumo.</b> A cobertura produz '+
+      n1(m.aprovT/Math.max(m.dTot,1))+' vezes toda a demanda não potável do campus e cobre '+pct(atend)+
+      ' dela. Ampliar a captação ou o reservatório não gera mais economia: o ganho adicional passa a ser de drenagem.';
+  }else{
+    g.className='note';
+    g.innerHTML='A cobertura atende '+pct(atend)+' da demanda não potável. Como a oferta não supera a demanda com folga, '+
+      'aumentar a área de captação ou o reservatório ainda converte em economia direta.';
+  }
+
+  /* balanço */
+  let h='';
+  m.sim.rows.forEach((r,i)=>{
+    h+='<tr><td>'+MESESL[i]+'</td><td>'+n0(s.P[i])+'</td><td>'+n0(m.aprov[i])+'</td><td>'+n0(m.dem[i])+
+       '</td><td>'+n0(r.usado)+'</td><td>'+n0(r.rede)+'</td><td>'+n0(r.ext)+'</td><td>'+n0(r.fim)+'</td></tr>';
+  });
+  $('tBal').innerHTML=h;
+  $('fBal').innerHTML='<tr><td>Ano</td><td>'+n0(m.Pano)+'</td><td>'+n0(m.aprovT)+'</td><td>'+n0(m.dTot)+
+    '</td><td>'+n0(m.sim.usado)+'</td><td>'+n0(m.sim.rede)+'</td><td>'+n0(m.sim.ext)+'</td><td>—</td></tr>';
+
+  /* dimensionamento */
+  const vIng=0.05*m.Pano*s.A/1000;
+  const vAle=Math.min(0.06*m.aprovT,0.06*m.dTot);
+  const vAze=0.042*m.Pano*s.A*2/1000;
+  $('tDim').innerHTML=
+    '<tr><td>Prático inglês</td><td>'+n0(vIng)+'</td><td style="text-align:left;font-family:var(--sans)">V = 0,05 × P × A. Simples, tende a superdimensionar.</td></tr>'+
+    '<tr><td>Prático alemão</td><td>'+n0(vAle)+'</td><td style="text-align:left;font-family:var(--sans)">6% do menor entre oferta e demanda. Costuma dar o valor mais econômico.</td></tr>'+
+    '<tr><td>Azevedo Neto</td><td>'+n0(vAze)+'</td><td style="text-align:left;font-family:var(--sans)">V = 0,042 × P × A × T, com T = 2 meses de pouca chuva.</td></tr>';
+
+  const sweepV=[50,100,150,200,300,400,500,750,1000];
+  let sw='', best=null;
+  sweepV.forEach(V=>{
+    const r=atV(s,m,V);
+    if(best===null||r.pay<best.pay) best=r;
+    sw+='<tr'+(V===Math.round(s.Vres)?' class="rowmark"':'')+'><td>'+n0(V)+'</td><td>'+pct(r.atend)+
+        '</td><td>'+pct(r.aprov)+'</td><td>'+brl(r.liq)+'</td><td>'+brl(r.capex)+
+        '</td><td>'+(isFinite(r.pay)?n1(r.pay):'não paga')+'</td></tr>';
+  });
+  $('tSweep').innerHTML=sw;
+  const cur=atV(s,m,s.Vres);
+  $('noteSweep').innerHTML='A linha destacada é o volume que você definiu ao lado, de '+n0(s.Vres)+
+    ' m³. Nas condições atuais, o melhor retorno da tabela está em '+n0(best.V)+' m³, com '+
+    (isFinite(best.pay)?n1(best.pay)+' anos':'retorno indefinido')+' e '+pct(best.atend)+
+    ' da demanda atendida. Repare que, passado certo ponto, aumentar o reservatório só aumenta o investimento.';
+
+  /* economia */
+  $('kEcon').textContent=brl(m.liq);
+  $('kSubst').textContent=n0(m.sim.usado);
+  $('kPay').textContent=isFinite(m.pay)?n1(m.pay):'—';
+  $('k20').textContent=brl(m.liq*20-m.capex);
+
+  let tt='';
+  [3,5,7,9,11,13,15].forEach(t=>{
+    const cu=t*(1+s.esg), li=m.sim.usado*cu-s.opex, pa=li>0?m.capex/li:Infinity;
+    tt+='<tr><td>'+n2(t)+'</td><td>R$ '+n2(cu)+'</td><td>'+brl(li)+'</td><td>'+(isFinite(pa)?n1(pa):'não paga')+'</td></tr>';
+  });
+  $('tTar').innerHTML=tt;
+
+  const ne=$('noteEcon');
+  if(m.pay>15){
+    ne.className='note warn';
+    ne.innerHTML='<b>Com a tarifa atual, o retorno é longo.</b> A '+n2(s.tar)+' R$/m³ o payback fica em '+
+      (isFinite(m.pay)?n1(m.pay)+' anos':'prazo indefinido')+
+      '. Nesse cenário o investimento não se sustenta só pela conta de água: o argumento precisa somar o alívio da drenagem, '+
+      'a segurança hídrica em estiagem e o valor didático da instalação. Vale também reduzir o escopo, começando por um bloco piloto.';
+  }else if(m.pay>8){
+    ne.className='note';
+    ne.innerHTML='Retorno de '+n1(m.pay)+' anos, dentro da vida útil típica do sistema, que é de 20 a 30 anos. '+
+      'O item que mais move esse número é o custo da rede predial dupla, então vale cotar antes de fechar a proposta.';
+  }else{
+    ne.className='note ok';
+    ne.innerHTML='Retorno de '+n1(m.pay)+' anos, curto frente à vida útil de 20 a 30 anos do sistema. '+
+      'Confirme a tarifa real e o orçamento de rede predial antes de apresentar como definitivo.';
+  }
+
+  /* drenagem */
+  $('kQtot').textContent=n0(m.Qtel+m.Qasf);
+  $('kQtel').textContent=n0(m.Qtel);
+  $('kQasf').textContent=n0(m.Qasf);
+  $('kVev').textContent=n0(m.Vtel+m.Vasf);
+
+  $('tDren').innerHTML=
+    '<tr><td>Altura de chuva no evento</td><td>'+n0(m.hmm)+' mm</td></tr>'+
+    '<tr><td>Volume dos telhados no evento</td><td>'+n0(m.Vtel)+' m³</td></tr>'+
+    '<tr><td>Volume livre no reservatório</td><td>'+n0(m.livreV)+' m³</td></tr>'+
+    '<tr><td>Retido de fato</td><td>'+n0(m.retido)+' m³</td></tr>'+
+    '<tr><td>Redução do evento do campus</td><td>'+pct(m.retido/Math.max(m.Vtel+m.Vasf,1))+'</td></tr>';
+
+  $('tDual').innerHTML=
+    '<tr><td>Área impermeabilizada</td><td>'+n0(s.A+s.Aasf)+' m²</td></tr>'+
+    '<tr><td>Amortecimento de referência</td><td>'+n0(m.amort)+' m³</td></tr>'+
+    '<tr><td>Fração do reservatório adotado</td><td>'+pct(m.amort/Math.max(s.Vres,1))+'</td></tr>';
+
+  $('noteDren').innerHTML='<b>Cisterna cheia não amortece nada.</b> O cálculo acima supõe o reservatório '+
+    pct(s.livre)+' vazio quando a chuva chega, e essa é a hipótese mais frágil de todo o estudo. '+
+    'Sem dispositivo de esvaziamento controlado, o benefício de drenagem é intermitente. '+
+    'O volume de amortecimento de referência vem da fórmula usada nas leis municipais de reservatório de detenção, '+
+    'com índice pluviométrico de 0,06 m/h e uma hora de duração; convém verificar se Mafra tem legislação própria.';
+
+  $('dAnual').textContent=n0(m.sim.usado);
+  $('dAnualP').textContent=pct(m.sim.usado/Math.max(m.brutoT,1));
+
+  /* asfalto */
+  $('kAsfV').textContent=n0(m.asfAno);
+  $('kAsfR').textContent=pct(m.asfAno/Math.max(m.brutoT,1));
+}
+
+/* ---------- ligação com os campos ---------- */
+function fill(){
+  KEYS.forEach(k=>{ const el=$(k); if(el) el.value=S[k]; });
+  document.querySelectorAll('[data-p]').forEach(el=>{ el.value=S.P[+el.dataset.p]; });
+}
+function bind(){
+  KEYS.forEach(k=>{
+    const el=$(k); if(!el) return;
+    el.addEventListener('input',()=>{
+      const v=parseFloat(el.value);
+      S[k]=isNaN(v)?0:v;
+      render();
+    });
+  });
+  document.querySelectorAll('[data-p]').forEach(el=>{
+    el.addEventListener('input',()=>{
+      const v=parseFloat(el.value);
+      S.P[+el.dataset.p]=isNaN(v)?0:Math.max(v,0);
+      render();
+    });
+  });
+}
+
+/* ---------- link compartilhável ---------- */
+function encode(){
+  const o={};
+  KEYS.forEach(k=>o[k]=S[k]);
+  o.P=S.P;
+  return btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+}
+function decode(){
+  try{
+    const raw=location.hash.replace(/^#d=/,'');
+    if(!raw) return false;
+    const o=JSON.parse(decodeURIComponent(escape(atob(raw))));
+    KEYS.forEach(k=>{ if(typeof o[k]==='number') S[k]=o[k]; });
+    if(Array.isArray(o.P)&&o.P.length===12) S.P=o.P.map(Number);
+    return true;
+  }catch(e){ return false; }
+}
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),2200);
+}
+
+$('bShare').addEventListener('click',()=>{
+  const url=location.origin+location.pathname+'#d='+encode();
+  history.replaceState(null,'','#d='+encode());
+  const done=()=>toast('Link copiado. Ele carrega exatamente estes valores.');
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done).catch(()=>{
+      prompt('Copie o link:',url);
+    });
+  }else{ prompt('Copie o link:',url); }
+});
+$('bPrint').addEventListener('click',()=>window.print());
+$('bReset').addEventListener('click',()=>{
+  S=JSON.parse(JSON.stringify(DEF));
+  history.replaceState(null,'',location.pathname);
+  fill(); render(); toast('Valores padrão restaurados.');
+});
+
+document.querySelectorAll('.res table').forEach(function(t){
+  var w=document.createElement('div'); w.className='tscroll';
+  t.parentNode.insertBefore(w,t); w.appendChild(t);
+});
+
+decode();
+fill();
+bind();
+render();
+})();
+</script>
+</body>
+</html>
